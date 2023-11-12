@@ -24,6 +24,13 @@ jobs:
         run: npm run eslint
       - name: npm build
         run: npm run build
+      - name: Build failure discord alert
+        if: ${{ failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} build failure.'
       - name: test
         run: npm test
       - name: e2e tests
@@ -37,6 +44,13 @@ jobs:
         run: flyctl deploy --remote-only
         env: 
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Application deployed discord alert
+        if: ${{ success() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} was deployed.'
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
